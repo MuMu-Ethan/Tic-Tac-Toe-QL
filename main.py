@@ -58,9 +58,14 @@ def IsWinner(player):
         (board[2] == board[4] == board[6] == player)
   )
 
-q_table1 = np.zeros([3] * 9 + [9])
-q_table = np.zeros([3] * 9 + [9]) #Create new q_table
-#q_table = np.load('q_table.npy') #Load trained q_table
+train = input("Train? Choose y if you run it the first time (y/n):  ")
+
+if train == "y":
+    q_table1 = np.zeros([3] * 9 + [9])
+    q_table2 = np.zeros([3] * 9 + [9])
+else:
+    q_table1 = np.load('q_table1.npy') 
+    q_table2 = np.load('q_table2.npy')
 
 
 def Action(q_table):
@@ -81,97 +86,102 @@ tie = 0
 
 print("Starts Training")
 
-
-for episode in range(EPISODES):
-    side = 0
-    
-    reward1 = 0
-    reward2 = 0
-
-    current_q1 = []
-    next_max_q1 = []
-    end_move1 = []
-    board_state1 = []
-
-    current_q2 = []
-    next_max_q2 = []
-    end_move2 = []
-    board_state2 = []
-
-    if (episode + 1) % 10000 == 0:
-        print(episode + 1, "episodes")
-    Reset() 
-    while 0 in board and not IsWinner(1) and not IsWinner(2):  
-        if side % 2 == 0:    
-            
-            action1 = Action(q_table1)
-            
-            end_move1.append(action1)
-            state = tuple(board)
-            current_q1.append(q_table1[state][action1])
-            
-            board_state1.append(state)
-            
-            board[action1] = 1
-            new_state = tuple(board)
-            next_max_q1.append(np.max(q_table1[new_state])) 
-            
-        if side % 2 != 0:     
-                
-            action2 = Action(q_table)
-            
-            end_move2.append(action2)
-            state = tuple(board)
-            current_q2.append(q_table[state][action2])
-            
-            board_state2.append(state)
-            
-            board[action2] = 2
-            new_state = tuple(board)
-            next_max_q2.append(np.max(q_table[new_state]))
+if train == "y":
+    for episode in range(EPISODES):
+        side = 0
         
-        side += 1
-   
-    if IsWinner(1):
-        reward1 = 1
-        lose += 1
-    elif IsWinner(2):
-        reward1 = -1
-        win += 1
-    else:
-        tie += 1
-    
-    reward2 = -1 * reward1
+        reward1 = 0
+        reward2 = 0
 
-    for i in range(len(end_move1)):
-        new_q = (1 - LEARNING_RATE) * current_q1[i] + (LEARNING_RATE * (reward1 + (DISCOUNT * next_max_q1[i])))
-        q_table1[(board_state1[i])][end_move1[i]] = new_q 
-    q_table[(board_state1[-1])][end_move1[-1]] = reward1
+        current_q1 = []
+        next_max_q1 = []
+        end_move1 = []
+        board_state1 = []
 
-    for i in range(len(end_move2)):
-        new_q = (1 - LEARNING_RATE) * current_q2[i] + (LEARNING_RATE * (reward2 + (DISCOUNT * next_max_q1[i])))
-        q_table[(board_state2[i])][end_move2[i]] = new_q
-    q_table[(board_state2[-1])][end_move2[-1]] = reward2
-    
-    if START_EPISILON_DECAY <= episode <= END_EPSILON_DECAY:
-        epsilon = epsilon - DECAY_VALUE
+        current_q2 = []
+        next_max_q2 = []
+        end_move2 = []
+        board_state2 = []
 
-print("")
+        if (episode + 1) % 10000 == 0:
+            print(episode + 1, "episodes")
+        Reset() 
+        while 0 in board and not IsWinner(1) and not IsWinner(2):  
+            if side % 2 == 0:    
+                
+                action1 = Action(q_table1)
+                
+                end_move1.append(action1)
+                state = tuple(board)
+                current_q1.append(q_table1[state][action1])
+                
+                board_state1.append(state)
+                
+                board[action1] = 1
+                new_state = tuple(board)
+                next_max_q1.append(np.max(q_table1[new_state])) 
+                
+            if side % 2 != 0:     
+                    
+                action2 = Action(q_table2)
+                
+                end_move2.append(action2)
+                state = tuple(board)
+                current_q2.append(q_table2[state][action2])
+                
+                board_state2.append(state)
+                
+                board[action2] = 2
+                new_state = tuple(board)
+                next_max_q2.append(np.max(q_table2[new_state]))
+            
+            side += 1
 
-np.save('q_table.npy', q_table) 
+        if IsWinner(1):
+            reward1 = 1
+            lose += 1
+        elif IsWinner(2):
+            reward1 = -1
+            win += 1
+        else:
+            tie += 1
+        
+        reward2 = -1 * reward1
 
-print("Training Finished")
-print("")
+        for i in range(len(end_move1)):
+            new_q = (1 - LEARNING_RATE) * current_q1[i] + (LEARNING_RATE * (reward1 + (DISCOUNT * next_max_q1[i])))
+            q_table1[(board_state1[i])][end_move1[i]] = new_q 
+        q_table1[(board_state1[-1])][end_move1[-1]] = reward1
 
-print("Results")
-print("Win:", win)
-print("Lose:", lose)
-print("Tie:", tie)
+        for i in range(len(end_move2)):
+            new_q = (1 - LEARNING_RATE) * current_q2[i] + (LEARNING_RATE * (reward2 + (DISCOUNT * next_max_q1[i])))
+            q_table2[(board_state2[i])][end_move2[i]] = new_q
+        q_table2[(board_state2[-1])][end_move2[-1]] = reward2
+        
+        if START_EPISILON_DECAY <= episode <= END_EPSILON_DECAY:
+            epsilon = epsilon - DECAY_VALUE
 
-print("")
-print("############################################")
-print("")
-epsilon = 0
+    print("")
+
+    np.save('q_table1.npy', q_table1) 
+    np.save('q_table2.npy', q_table2) 
+
+    print("Training Finished")
+
+    if train == "y":
+        print("Progress Saved")
+
+    print("")
+
+    print("Results")
+    print("Win:", win)
+    print("Lose:", lose)
+    print("Tie:", tie)
+
+    print("")
+    print("############################################")
+    print("")
+    epsilon = 0
 
 def Game():
     side = 0
@@ -183,7 +193,7 @@ def Game():
             PlayerMove()
         
         if side % 2 != 0:
-            move = Action(q_table)
+            move = Action(q_table2)
             board[move] = 2
             PrintBoard()
             print("Computer plays in position", (move + 1))

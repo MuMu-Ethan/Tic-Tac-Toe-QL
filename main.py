@@ -1,4 +1,5 @@
 import numpy as np
+import pygame
 
 def Reset():
     global board
@@ -28,23 +29,6 @@ START_EPISILON_DECAY = 0
 END_EPSILON_DECAY = EPISODES // 1.1
 DECAY_VALUE = epsilon / (END_EPSILON_DECAY - START_EPISILON_DECAY)
 
-def PlayerMove():
-    run = True
-    while run:
-        move = input('Please select a position by typing a number 1~9: ')
-        try:
-            move = int(move)
-            if move > 0 and move < 10:
-                if board[move - 1] == 0:
-                    run = False
-                    board[move - 1] = 1
-                else:
-                    print('This postion is already occupied!')
-            else:
-                print('Please type a number in the range!')
-        except:
-            print('Please type a valid number!')
-
 
 def IsWinner(player):
     return (
@@ -71,22 +55,27 @@ else:
 def Action(q_table):
     possible_moves = [x for x, letter in enumerate(board) if letter == 0]
     moves = [-np.inf] * 9
-    for i in possible_moves:
-        moves[i] = q_table[tuple(board)][i]
-    if np.random.random() > epsilon:
-        move = np.argmax(moves)
-    else: 
-        move = np.random.choice(possible_moves)
-
+    if len(possible_moves) != 0:
+        for i in possible_moves:
+            moves[i] = q_table[tuple(board)][i]
+        if np.random.random() > epsilon:
+            move = np.argmax(moves)
+        else: 
+            move = np.random.choice(possible_moves)
+    else:
+        move = -1
     return move
 
-win = 0
-lose = 0
-tie = 0
 
-print("Starts Training")
 
 if train == "y":
+    
+    win = 0
+    lose = 0
+    tie = 0
+    
+    print("Starts Training")
+
     for episode in range(EPISODES):
         side = 0
         
@@ -181,38 +170,82 @@ if train == "y":
     print("")
     print("############################################")
     print("")
-    epsilon = 0
+    
+epsilon = 0
 
-def Game():
-    side = 0
-    Reset()
-    print("Welcome to Tic Tac Toe!")
-    PrintBoard()
-    while 0 in board and not IsWinner(1) and not IsWinner(2):
-        if side % 2 == 0:
-            PlayerMove()
+
+
+WIN = pygame.display.set_mode((900, 900))
+pygame.display.set_caption("Tic Tac Toe")
+
+board_surface = pygame.image.load('/Users/daniel/TicTacToeQL/graphics/board.png').convert_alpha()
+playerX_surface = pygame.transform.scale(pygame.image.load('/Users/daniel/TicTacToeQL/graphics/playerX.png').convert_alpha(), (960/4.5, 720/4.5))
+playerO_surface = pygame.transform.scale(pygame.image.load('/Users/daniel/TicTacToeQL/graphics/playerO.png').convert_alpha(), (960/4.5, 720/4.5))
+
+
+board_rect = board_surface.get_rect(center = (450, 450))
+
+run = True
+
+class Display:
+    def __init__(self, x, y, surface):
+        self.x = x
+        self.y = y
+        self.surface = surface
+
+    def draw(self):
+        WIN.blit(self.surface, (self.x, self.y))
+    
+positions = [(115, 159), (340, 159), (560, 159), (115, 372), (340, 372), (560, 372), (115, 594), (340, 594), (560, 594)]
+ins = []
+Reset()
+while run:
+    
+    WIN.fill((255, 255, 255))
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            run = False
         
-        if side % 2 != 0:
-            move = Action(q_table2)
-            board[move] = 2
-            PrintBoard()
-            print("Computer plays in position", (move + 1))
-        side += 1
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            
+            cont = False            
+            player_x, player_y = pygame.mouse.get_pos()
+            for i in range(3):
+                if player_x > positions[i][0]:
+                    final_player_x = positions[i][0]
     
-    PrintBoard()
+            for i in range(3):
+                if player_y > positions[3 * i][1]:
+                    final_player_y = positions[3 * i][1]
+            
+            index = positions.index((final_player_x, final_player_y))
+            pos_moves = [x for x, letter in enumerate(board) if letter == 0]
+
+            if index in pos_moves:
+                X = Display(final_player_x, final_player_y, playerX_surface)
+                ins.append(X)
+                board[index] = 1
+                cont = True
+
+            if IsWinner(1) or IsWinner(2) or 0 not in board:
+                run = False
+            
+            if run and cont:    
+                action = Action(q_table2)
+
+                if action == -1:
+                    run = False
+                
+                action_x, action_y = positions[action]
+                board[action] = 2
+                O = Display(action_x, action_y, playerO_surface)
+                ins.append(O)
+
+            if IsWinner(1) or IsWinner(2):
+                run = False
     
-    if IsWinner(1):
-        print("Congratulation! You won!")
-    elif IsWinner(2):
-        print("Oh no! You Lost!")
-    else:
-        print("Ties!")
-
-
-while True:
-    Game()
-    a = input("Again? (y/n) ")
-    if a == "y":
-        pass
-    else:
-        break
+    for n in ins:
+        n.draw()
+    
+    WIN.blit(board_surface, board_rect)
+    pygame.display.update()

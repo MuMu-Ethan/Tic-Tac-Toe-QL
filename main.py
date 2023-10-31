@@ -67,7 +67,6 @@ def Action(q_table):
     return move
 
 
-
 if train == "y":
     
     win = 0
@@ -117,9 +116,7 @@ if train == "y":
                 end_move2.append(action2)
                 state = tuple(board)
                 current_q2.append(q_table2[state][action2])
-                
                 board_state2.append(state)
-                
                 board[action2] = 2
                 new_state = tuple(board)
                 next_max_q2.append(np.max(q_table2[new_state]))
@@ -167,21 +164,22 @@ if train == "y":
     print("Lose:", lose)
     print("Tie:", tie)
 
-    print("")
-    print("############################################")
-    print("")
-    
 epsilon = 0
 
-
+pygame.init()
 
 WIN = pygame.display.set_mode((900, 900))
 pygame.display.set_caption("Tic Tac Toe")
 
-board_surface = pygame.image.load('/Users/daniel/TicTacToeQL/graphics/board.png').convert_alpha()
-playerX_surface = pygame.transform.scale(pygame.image.load('/Users/daniel/TicTacToeQL/graphics/playerX.png').convert_alpha(), (960/4.5, 720/4.5))
-playerO_surface = pygame.transform.scale(pygame.image.load('/Users/daniel/TicTacToeQL/graphics/playerO.png').convert_alpha(), (960/4.5, 720/4.5))
+board_surface = pygame.image.load('graphics/board.png').convert_alpha()
+playerX_surface = pygame.transform.scale(pygame.image.load('graphics/playerX.png').convert_alpha(), (960/4.5, 720/4.5))
+playerO_surface = pygame.transform.scale(pygame.image.load('graphics/playerO.png').convert_alpha(), (960/4.5, 720/4.5))
 
+def Font(x, y, size, text, color):
+    font = pygame.font.Font('font/ARCADECLASSIC.ttf', size)
+    text_surface = font.render(text, True, color)
+    text_rect = text_surface.get_rect(center = (x, y))
+    WIN.blit(text_surface, text_rect)
 
 board_rect = board_surface.get_rect(center = (450, 450))
 
@@ -197,6 +195,7 @@ class Display:
         WIN.blit(self.surface, (self.x, self.y))
     
 positions = [(115, 159), (340, 159), (560, 159), (115, 372), (340, 372), (560, 372), (115, 594), (340, 594), (560, 594)]
+
 ins = []
 Reset()
 while run:
@@ -248,4 +247,11 @@ while run:
         n.draw()
     
     WIN.blit(board_surface, board_rect)
+    if IsWinner(1):
+        Font(450, 450, 100, "You Win!", "green")
+    elif IsWinner(2):
+        Font(450, 450, 100, "You Lose!", "red")
+    elif 0 not in board:
+        Font(450, 450, 150, "Ties!", "orange")
+
     pygame.display.update()

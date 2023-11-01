@@ -10,9 +10,6 @@ def Reset():
         board.append(0)
 
 
-Reset()
-
-
 def PrintBoard():
     print(" ")
     print(board[0], "|", board[1], "|", board[2])
@@ -43,7 +40,6 @@ def IsWinner(player):
         or (board[0] == board[4] == board[8] == player)
         or (board[2] == board[4] == board[6] == player)
     )
-
 
 train = input("Train? Choose y if you run it the first time (y/n):  ")
 
@@ -160,7 +156,7 @@ if train == "y":
     print("Progress Saved")
     print("")
 
-    print("Results")
+    print("Results:")
     print("Win:", win)
     print("Lose:", lose)
     print("Tie:", tie)
@@ -185,13 +181,17 @@ def Font(x, y, size, text, color):
     font = pygame.font.Font("font/ARCADECLASSIC.ttf", size)
     text_surface = font.render(text, True, color)
     text_rect = text_surface.get_rect(center=(x, y))
-    bg_surface = pygame.Surface((text_surface.get_width() + 30, text_surface.get_height()))
+    bg_surface = pygame.Surface(
+        (text_surface.get_width() + 80, text_surface.get_height())
+    )
     bg_rect = bg_surface.get_rect(center=(x, y))
 
     WIN.blit(bg_surface, bg_rect)
     WIN.blit(text_surface, text_rect)
 
+
 board_rect = board_surface.get_rect(center=(450, 450))
+
 
 class Display:
     def __init__(self, x, y, surface):

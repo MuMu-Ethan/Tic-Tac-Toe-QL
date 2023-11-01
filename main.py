@@ -177,14 +177,14 @@ playerO_surface = pygame.transform.scale(
 )
 
 
-def Font(x, y, size, text, color):
+def Font(size, text, color):
     font = pygame.font.Font("font/ARCADECLASSIC.ttf", size)
     text_surface = font.render(text, True, color)
-    text_rect = text_surface.get_rect(center=(x, y))
+    text_rect = text_surface.get_rect(center=(450, 450))
     bg_surface = pygame.Surface(
         (text_surface.get_width() + 80, text_surface.get_height())
     )
-    bg_rect = bg_surface.get_rect(center=(x, y))
+    bg_rect = bg_surface.get_rect(center=(450, 450))
 
     WIN.blit(bg_surface, bg_rect)
     WIN.blit(text_surface, text_rect)
@@ -270,13 +270,13 @@ while stop:
 
         WIN.blit(board_surface, board_rect)
         if IsWinner(1):
-            Font(450, 450, 100, "You  Win!", "green")
+            Font(100, "You  Win!", "green")
             wait = True
         elif IsWinner(2):
-            Font(450, 450, 100, "You  Lose!", "red")
+            Font(100, "You  Lose!", "red")
             wait = True
         elif 0 not in board:
-            Font(450, 450, 150, "Ties!", "orange")
+            Font(150, "Ties!", "orange")
             wait = True
 
         pygame.display.update()

@@ -1,23 +1,11 @@
 import numpy as np
 import pygame
-import time
-
 
 def Reset():
     global board
     board = []
     for i in range(9):
         board.append(0)
-
-
-def PrintBoard():
-    print(" ")
-    print(board[0], "|", board[1], "|", board[2])
-    print("-----------")
-    print(board[3], "|", board[4], "|", board[5])
-    print("-----------")
-    print(board[6], "|", board[7], "|", board[8])
-    print(" ")
 
 
 EPISODES = 100000
@@ -41,7 +29,7 @@ def IsWinner(player):
         or (board[2] == board[4] == board[6] == player)
     )
 
-train = input("Train? Choose y if you run it the first time (y/n):  ")
+train = input("Train Agent? Choose y if you run it the first time (y/n):  ")
 
 if train == "y":
     q_table1 = np.zeros([3] * 9 + [9])
